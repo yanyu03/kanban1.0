@@ -1,0 +1,33 @@
+name: Price Radar Quant Audit
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 */6 * * *'
+  push:
+    paths:
+      - 'packages/quant/**'
+      - '.github/workflows/quant.yml'
+permissions:
+  contents: read
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: packages/quant
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: packages/quant/requirements.txt
+      - run: python -m pip install -r requirements.txt
+      - run: python -m unittest discover -s tests -v
+      - run: python quant.py data/quotes.json --output output/quant_results.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: price-radar-quant-results
+          path: packages/quant/output/quant_results.json
+          retention-days: 14
