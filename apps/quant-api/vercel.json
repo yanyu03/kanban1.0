@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "functions": {
+    "api/quant/*.js": {
+      "maxDuration": 10
+    }
+  }
+}
