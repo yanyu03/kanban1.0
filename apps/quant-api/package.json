@@ -1,0 +1,11 @@
+{
+  "name": "price-radar-quant-api",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}
