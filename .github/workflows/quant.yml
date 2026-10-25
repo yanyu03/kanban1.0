@@ -9,6 +9,9 @@ on:
       - '.github/workflows/quant.yml'
 permissions:
   contents: read
+concurrency:
+  group: price-radar-quant
+  cancel-in-progress: false
 jobs:
   analyze:
     runs-on: ubuntu-latest
@@ -25,8 +28,19 @@ jobs:
           cache-dependency-path: packages/quant/requirements.txt
       - run: python -m pip install -r requirements.txt
       - run: python -m unittest discover -s tests -v
+      - name: Export read-only Supabase references
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            python export_supabase.py
+          else
+            echo "Supabase secrets missing: fixture mode (NO_INPUT_DATA)"
+          fi
       - run: python quant.py data/quotes.json --output output/quant_results.json
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: price-radar-quant-results
           path: packages/quant/output/quant_results.json
